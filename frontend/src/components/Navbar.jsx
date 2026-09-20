@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LogIn, UserPlus, Activity, Sparkles, Award, Compass, Send, Zap, Inbox } from 'lucide-react';
+import { LogOut, LogIn, UserPlus, Activity, Sparkles, Award, Compass, Send, Zap, Inbox, LayoutDashboard } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, pendingRequests }) {
   const { user, logout, isAuthenticated } = useAuth();
@@ -11,7 +11,7 @@ export default function Navbar({ activeTab, setActiveTab, pendingRequests }) {
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
           <div 
-            onClick={() => setActiveTab('health')}
+            onClick={() => setActiveTab(isAuthenticated ? 'dashboard' : 'health')}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-slate-900 shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-all">
@@ -19,7 +19,7 @@ export default function Navbar({ activeTab, setActiveTab, pendingRequests }) {
             </div>
             <div>
               <span className="font-extrabold text-lg text-slate-100 tracking-tight">Skill<span className="text-cyan-400">Swap</span></span>
-              <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">MVP v1</span>
+              <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">MVP</span>
             </div>
           </div>
 
@@ -34,11 +34,23 @@ export default function Navbar({ activeTab, setActiveTab, pendingRequests }) {
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              Health API
+              Health
             </button>
 
             {isAuthenticated ? (
               <>
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === 'dashboard' 
+                      ? 'bg-slate-800 text-cyan-400 border border-slate-700' 
+                      : 'text-slate-300 hover:text-slate-100 hover:bg-slate-800/50'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                  Dashboard
+                </button>
+
                 <button
                   onClick={() => setActiveTab('matches')}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -48,7 +60,7 @@ export default function Navbar({ activeTab, setActiveTab, pendingRequests }) {
                   }`}
                 >
                   <Compass className="w-3.5 h-3.5" />
-                  Discover Matches
+                  Discover
                 </button>
 
                 <button

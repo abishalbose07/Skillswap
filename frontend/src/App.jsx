@@ -8,6 +8,7 @@ import MySkillsPage from './pages/MySkillsPage';
 import MatchesPage from './pages/MatchesPage';
 import SwapRequestsPage from './pages/SwapRequestsPage';
 import ActiveSwapsPage from './pages/ActiveSwapsPage';
+import DashboardPage from './pages/DashboardPage';
 import api from './api/axios';
 import { Activity, CheckCircle2, XCircle, RefreshCw, Server, Database, Code2 } from 'lucide-react';
 
@@ -45,7 +46,7 @@ function HealthDashboard() {
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs text-cyan-400 font-medium">
           <Activity className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-          SkillSwap Phase 5 – Swap Request & Active Swap System
+          SkillSwap System Status & Health
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
           SkillSwap Backend
@@ -130,7 +131,7 @@ function HealthDashboard() {
               </span>
             </div>
             <p className="text-sm font-semibold text-slate-200">Spring Boot 3</p>
-            <p className="text-xs text-slate-500">Port 8080 • Phase 5</p>
+            <p className="text-xs text-slate-500">Port 8080 • Phase 6</p>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
@@ -139,7 +140,7 @@ function HealthDashboard() {
               <span className="text-cyan-400 font-medium">Configured</span>
             </div>
             <p className="text-sm font-semibold text-slate-200">MySQL / JPA</p>
-            <p className="text-xs text-slate-500">Swap Requests + Swaps</p>
+            <p className="text-xs text-slate-500">Full Skill Exchanges</p>
           </div>
         </div>
       </div>
@@ -149,7 +150,7 @@ function HealthDashboard() {
 
 function MainContent() {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState(isAuthenticated ? 'matches' : 'login');
+  const [activeTab, setActiveTab] = useState(isAuthenticated ? 'dashboard' : 'login');
   const [pendingRequests, setPendingRequests] = useState(0);
 
   // Poll for pending received requests to show badge
@@ -165,8 +166,14 @@ function MainContent() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && activeTab !== 'health' && activeTab !== 'skills' && activeTab !== 'profile') {
-      setActiveTab('matches');
+    if (isAuthenticated) {
+      if (activeTab === 'login' || activeTab === 'register') {
+        setActiveTab('dashboard');
+      }
+    } else {
+      if (activeTab !== 'health' && activeTab !== 'register') {
+        setActiveTab('login');
+      }
     }
   }, [isAuthenticated]);
 
@@ -177,9 +184,9 @@ function MainContent() {
     return () => clearInterval(interval);
   }, [fetchPendingCount]);
 
-  // Refresh count whenever we navigate to requests tab
+  // Refresh count whenever we navigate to requests tab or dashboard
   useEffect(() => {
-    if (activeTab === 'requests') {
+    if (activeTab === 'requests' || activeTab === 'dashboard') {
       fetchPendingCount();
     }
   }, [activeTab, fetchPendingCount]);
@@ -200,15 +207,18 @@ function MainContent() {
           {activeTab === 'health' && <HealthDashboard />}
           {activeTab === 'login' && (
             <LoginPage
-              onSuccess={() => setActiveTab('matches')}
+              onSuccess={() => setActiveTab('dashboard')}
               onSwitchToRegister={() => setActiveTab('register')}
             />
           )}
           {activeTab === 'register' && (
             <RegisterPage
-              onSuccess={() => setActiveTab('matches')}
+              onSuccess={() => setActiveTab('dashboard')}
               onSwitchToLogin={() => setActiveTab('login')}
             />
+          )}
+          {activeTab === 'dashboard' && (
+            <DashboardPage onNavigate={(tab) => setActiveTab(tab)} />
           )}
           {activeTab === 'profile' && (
             <ProfilePage onNavigateToSkills={() => setActiveTab('skills')} />
@@ -232,7 +242,7 @@ function MainContent() {
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-900">
-        SkillSwap Phase 5 – Swap Request & Active Swap System
+        SkillSwap – Peer-to-Peer Student Skill Exchange Platform
       </footer>
     </div>
   );
