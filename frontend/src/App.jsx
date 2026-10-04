@@ -200,8 +200,8 @@ function MainContent() {
       />
 
       <main className="flex-1 flex items-center justify-center p-4 md:p-8 relative">
-        <div className="absolute top-1/4 left-1/3 -translate-x-1/2 w-96 h-96 bg-cyan-500/10 blur-[130px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-indigo-500/10 blur-[130px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/4 left-1/3 -translate-x-1/2 w-96 h-96 bg-indigo-500/10 blur-[140px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none" />
 
         <div className="w-full relative z-10">
           {activeTab === 'health' && <HealthDashboard />}
@@ -241,8 +241,8 @@ function MainContent() {
         </div>
       </main>
 
-      <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-900">
-        SkillSwap – Peer-to-Peer Student Skill Exchange Platform
+      <footer className="py-5 text-center text-xs text-slate-400 border-t border-white/[0.06] bg-[#070b13]/50">
+        SkillSwap – Peer-to-Peer Student Knowledge Exchange • Built for campus learners
       </footer>
     </div>
   );

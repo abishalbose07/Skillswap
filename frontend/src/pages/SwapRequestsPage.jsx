@@ -1,26 +1,54 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import {
-  Send, Inbox, Clock, CheckCircle2, XCircle, Trash2, RefreshCw,
-  ArrowRight, Sparkles, MessageSquare, BookOpen, User
+  Send,
+  Inbox,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Trash2,
+  RefreshCw,
+  ArrowRight,
+  Sparkles,
+  MessageSquare,
+  Award,
+  BookOpen,
+  User,
+  Zap
 } from 'lucide-react';
 
-const STATUS_STYLES = {
-  PENDING:   { bg: 'bg-amber-500/10',  text: 'text-amber-400',  border: 'border-amber-500/30',  label: 'Pending'   },
-  ACCEPTED:  { bg: 'bg-emerald-500/10',text: 'text-emerald-400',border: 'border-emerald-500/30',label: 'Accepted'  },
-  REJECTED:  { bg: 'bg-red-500/10',    text: 'text-red-400',    border: 'border-red-500/30',    label: 'Rejected'  },
-  CANCELLED: { bg: 'bg-slate-500/10',  text: 'text-slate-400',  border: 'border-slate-500/30',  label: 'Cancelled' },
+const STATUS_CONFIG = {
+  PENDING: {
+    badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    icon: Clock,
+    label: 'Pending Response',
+  },
+  ACCEPTED: {
+    badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    icon: CheckCircle2,
+    label: 'Accepted',
+  },
+  REJECTED: {
+    badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+    icon: XCircle,
+    label: 'Declined',
+  },
+  CANCELLED: {
+    badge: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+    icon: Trash2,
+    label: 'Cancelled',
+  },
 };
 
-function StatusBadge({ status }) {
-  const s = STATUS_STYLES[status] || STATUS_STYLES.PENDING;
+function StatusPill({ status }) {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
+  const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border ${s.bg} ${s.text} ${s.border}`}>
-      {status === 'PENDING' && <Clock className="w-3 h-3" />}
-      {status === 'ACCEPTED' && <CheckCircle2 className="w-3 h-3" />}
-      {status === 'REJECTED' && <XCircle className="w-3 h-3" />}
-      {status === 'CANCELLED' && <Trash2 className="w-3 h-3" />}
-      {s.label}
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${config.badge}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {config.label}
     </span>
   );
 }
@@ -28,98 +56,129 @@ function StatusBadge({ status }) {
 function RequestCard({ req, type, onAccept, onReject, onCancel, actionLoading }) {
   const isLoading = actionLoading === req.id;
   const other = type === 'received' ? req.sender : req.receiver;
+  const otherName = other?.fullName || other?.name || 'Student';
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition-all">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white font-black text-base shrink-0">
-            {(other?.fullName || other?.name || 'U').charAt(0).toUpperCase()}
+    <div className="rounded-3xl bg-[#111827]/80 border border-white/[0.08] hover:border-indigo-500/30 p-6 space-y-5 transition-all duration-200 shadow-xl relative overflow-hidden group">
+      {/* Header: User & Status */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-400 p-0.5 shadow-md shadow-indigo-500/20 shrink-0">
+            <div className="w-full h-full bg-[#0d1322] rounded-[14px] flex items-center justify-center text-white text-base font-bold font-['Plus_Jakarta_Sans']">
+              {otherName.charAt(0).toUpperCase()}
+            </div>
           </div>
           <div>
-            <p className="font-bold text-slate-100 text-sm">{other?.fullName || other?.name}</p>
-            <p className="text-[11px] text-slate-400">{other?.email}</p>
+            <h4 className="font-bold text-white text-base font-['Plus_Jakarta_Sans']">
+              {otherName}
+            </h4>
+            <p className="text-xs text-slate-400">
+              {type === 'received' ? 'Sent you a proposal' : 'You proposed a swap'}
+              {other?.college ? ` • ${other.college}` : ''}
+            </p>
           </div>
         </div>
-        <StatusBadge status={req.status} />
+
+        <StatusPill status={req.status} />
       </div>
 
-      {/* Skills Exchange */}
-      <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-        <div className="flex-1 text-center space-y-0.5">
-          <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Offered Skill</p>
-          <p className="text-xs font-semibold text-slate-200">{req.offeredSkill?.name || '—'}</p>
-          <p className="text-[10px] text-slate-500">{req.offeredSkill?.category}</p>
+      {/* Exchange Skill Visualiser */}
+      <div className="rounded-2xl bg-[#0b0f19] border border-white/[0.06] p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex-1 text-center sm:text-left">
+          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block mb-1">
+            Offered Skill
+          </span>
+          <p className="text-sm font-bold text-white">{req.offeredSkill?.name || '—'}</p>
+          <p className="text-xs text-slate-400">{req.offeredSkill?.category || 'General'}</p>
         </div>
-        <ArrowRight className="w-4 h-4 text-slate-500 shrink-0" />
-        <div className="flex-1 text-center space-y-0.5">
-          <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Requested Skill</p>
-          <p className="text-xs font-semibold text-slate-200">{req.requestedSkill?.name || '—'}</p>
-          <p className="text-[10px] text-slate-500">{req.requestedSkill?.category}</p>
+
+        <div className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center text-slate-400 shrink-0">
+          <ArrowRight className="w-4 h-4" />
+        </div>
+
+        <div className="flex-1 text-center sm:text-right">
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">
+            Requested Skill
+          </span>
+          <p className="text-sm font-bold text-white">{req.requestedSkill?.name || '—'}</p>
+          <p className="text-xs text-slate-400">{req.requestedSkill?.category || 'General'}</p>
         </div>
       </div>
 
-      {/* Message */}
+      {/* Message Note */}
       {req.message && (
-        <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-3 flex gap-2">
-          <MessageSquare className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-slate-300 leading-relaxed italic">"{req.message}"</p>
+        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.04] flex items-start gap-2.5 text-xs text-slate-300 italic">
+          <MessageSquare className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+          <span>"{req.message}"</span>
         </div>
       )}
 
-      {/* Timestamp */}
-      <p className="text-[10px] text-slate-500">
-        Sent: {req.createdAt ? new Date(req.createdAt).toLocaleString() : 'Unknown'}
-      </p>
+      {/* Footer Details & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1 border-t border-white/[0.04]">
+        <p className="text-[11px] text-slate-400">
+          {req.createdAt ? new Date(req.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently'}
+        </p>
 
-      {/* Actions */}
-      {req.status === 'PENDING' && (
-        <div className="flex gap-2 pt-1">
-          {type === 'received' && (
-            <>
+        {req.status === 'PENDING' && (
+          <div className="flex items-center gap-2.5">
+            {type === 'received' && (
+              <>
+                <button
+                  onClick={() => onAccept(req.id)}
+                  disabled={isLoading}
+                  className="px-4 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  Accept Swap
+                </button>
+                <button
+                  onClick={() => onReject(req.id)}
+                  disabled={isLoading}
+                  className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5" />
+                  )}
+                  Decline
+                </button>
+              </>
+            )}
+
+            {type === 'sent' && (
               <button
-                onClick={() => onAccept(req.id)}
+                onClick={() => onCancel(req.id)}
                 disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 border border-white/[0.08] text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                Accept
+                {isLoading ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                Cancel Proposal
               </button>
-              <button
-                onClick={() => onReject(req.id)}
-                disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-                Reject
-              </button>
-            </>
-          )}
-          {type === 'sent' && (
-            <button
-              onClick={() => onCancel(req.id)}
-              disabled={isLoading}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-              Cancel Request
-            </button>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function SwapRequestsPage({ onNavigateToSwaps }) {
-  const [activeTab, setActiveTab] = useState('received');
-  const [received, setReceived]   = useState([]);
-  const [sent, setSent]           = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [activeSubTab, setActiveSubTab] = useState('received');
+  const [received, setReceived] = useState([]);
+  const [sent, setSent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
-  const [successMsg, setSuccessMsg] = useState(null);
+  const [feedbackMsg, setFeedbackMsg] = useState(null);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -129,11 +188,11 @@ export default function SwapRequestsPage({ onNavigateToSwaps }) {
         api.get('/swap-requests/received'),
         api.get('/swap-requests/sent'),
       ]);
-      setReceived(recRes.data);
-      setSent(sentRes.data);
+      setReceived(recRes.data || []);
+      setSent(sentRes.data || []);
     } catch (err) {
-      console.error('Failed to fetch swap requests:', err);
-      setError('Failed to load swap requests. Please try again.');
+      console.error('Failed to load swap requests:', err);
+      setError('Failed to load swap proposals. Please ensure backend is running.');
     } finally {
       setLoading(false);
     }
@@ -143,141 +202,156 @@ export default function SwapRequestsPage({ onNavigateToSwaps }) {
     fetchRequests();
   }, [fetchRequests]);
 
-  const showSuccess = (msg) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
-  };
-
-  const handleAccept = async (id) => {
-    setActionLoading(id);
+  const handleAccept = async (requestId) => {
+    setActionLoading(requestId);
+    setFeedbackMsg(null);
     try {
-      await api.put(`/swap-requests/${id}/accept`);
-      showSuccess('Swap request accepted! An active swap has been created.');
+      await api.put(`/swap-requests/${requestId}/accept`);
+      setFeedbackMsg({ type: 'success', text: 'Proposal accepted! A new active swap has been launched.' });
       await fetchRequests();
-      if (onNavigateToSwaps) onNavigateToSwaps();
+      if (onNavigateToSwaps) {
+        setTimeout(() => onNavigateToSwaps(), 1200);
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to accept request.');
+      setFeedbackMsg({ type: 'error', text: err.response?.data?.error || 'Failed to accept proposal.' });
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleReject = async (id) => {
-    setActionLoading(id);
+  const handleReject = async (requestId) => {
+    setActionLoading(requestId);
+    setFeedbackMsg(null);
     try {
-      await api.put(`/swap-requests/${id}/reject`);
-      showSuccess('Swap request rejected.');
+      await api.put(`/swap-requests/${requestId}/reject`);
+      setFeedbackMsg({ type: 'info', text: 'Proposal declined.' });
       await fetchRequests();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to reject request.');
+      setFeedbackMsg({ type: 'error', text: err.response?.data?.error || 'Failed to decline proposal.' });
     } finally {
       setActionLoading(null);
     }
   };
 
-  const handleCancel = async (id) => {
-    setActionLoading(id);
+  const handleCancel = async (requestId) => {
+    setActionLoading(requestId);
+    setFeedbackMsg(null);
     try {
-      await api.delete(`/swap-requests/${id}`);
-      showSuccess('Swap request cancelled.');
+      await api.put(`/swap-requests/${requestId}/cancel`);
+      setFeedbackMsg({ type: 'info', text: 'Proposal withdrawn.' });
       await fetchRequests();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to cancel request.');
+      setFeedbackMsg({ type: 'error', text: err.response?.data?.error || 'Failed to cancel proposal.' });
     } finally {
       setActionLoading(null);
     }
   };
 
-  const displayList = activeTab === 'received' ? received : sent;
-  const pendingReceived = received.filter(r => r.status === 'PENDING').length;
+  const currentList = activeSubTab === 'received' ? received : sent;
+  const pendingReceivedCount = received.filter((r) => r.status === 'PENDING').length;
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-indigo-500/10 blur-[60px] rounded-full pointer-events-none" />
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
-            <Send className="w-3.5 h-3.5" /> Swap Requests
+    <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-8">
+      {/* Top Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-r from-[#131b2e] via-[#111827] to-[#0f172a] border border-white/[0.1] p-6 sm:p-8 overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 blur-[80px] pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">
+              <Inbox className="w-3.5 h-3.5" />
+              Collaboration Requests
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-['Plus_Jakarta_Sans']">
+              Swap Proposals
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-lg">
+              Manage incoming requests from students who want to trade knowledge with you, and track requests you've sent.
+            </p>
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">Skill Swap Requests</h1>
-          <p className="text-xs text-slate-400">Manage incoming and outgoing skill swap requests.</p>
+
+          <button
+            onClick={fetchRequests}
+            disabled={loading}
+            className="self-start md:self-center flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-semibold text-slate-200 transition-all cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
       </div>
 
-      {/* Success / Error banners */}
-      {successMsg && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-medium animate-pulse">
-          <CheckCircle2 className="w-4 h-4 shrink-0" /> {successMsg}
-        </div>
-      )}
-      {error && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-medium">
-          <XCircle className="w-4 h-4 shrink-0" /> {error}
-          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-300 cursor-pointer">✕</button>
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-1.5">
+      {/* Sub tabs switcher */}
+      <div className="flex items-center gap-3">
         <button
-          onClick={() => setActiveTab('received')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'received'
-              ? 'bg-slate-800 text-cyan-400 border border-slate-700'
-              : 'text-slate-400 hover:text-slate-200'
+          onClick={() => setActiveSubTab('received')}
+          className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            activeSubTab === 'received'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+              : 'bg-white/[0.05] text-slate-400 hover:text-white hover:bg-white/[0.08]'
           }`}
         >
-          <Inbox className="w-3.5 h-3.5" />
-          Received
-          {pendingReceived > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black">
-              {pendingReceived}
+          <Inbox className="w-4 h-4" />
+          Received Proposals
+          {pendingReceivedCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black">
+              {pendingReceivedCount}
             </span>
           )}
         </button>
+
         <button
-          onClick={() => setActiveTab('sent')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'sent'
-              ? 'bg-slate-800 text-indigo-400 border border-slate-700'
-              : 'text-slate-400 hover:text-slate-200'
+          onClick={() => setActiveSubTab('sent')}
+          className={`relative px-5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            activeSubTab === 'sent'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+              : 'bg-white/[0.05] text-slate-400 hover:text-white hover:bg-white/[0.08]'
           }`}
         >
-          <Send className="w-3.5 h-3.5" />
-          Sent
-        </button>
-        <button
-          onClick={fetchRequests}
-          disabled={loading}
-          className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all cursor-pointer disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <Send className="w-4 h-4" />
+          Sent Proposals ({sent.length})
         </button>
       </div>
 
-      {/* Content */}
+      {/* Feedback banner */}
+      {feedbackMsg && (
+        <div
+          className={`p-4 rounded-2xl text-xs font-medium border animate-in fade-in duration-150 ${
+            feedbackMsg.type === 'success'
+              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+              : feedbackMsg.type === 'error'
+              ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+              : 'bg-indigo-500/15 border-indigo-500/30 text-indigo-300'
+          }`}
+        >
+          {feedbackMsg.text}
+        </div>
+      )}
+
+      {/* Requests Feed */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-xs animate-pulse">Loading swap requests...</div>
-      ) : displayList.length === 0 ? (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
-          {activeTab === 'received' ? <Inbox className="w-10 h-10 text-slate-600 mx-auto" /> : <Send className="w-10 h-10 text-slate-600 mx-auto" />}
-          <p className="text-sm font-semibold text-slate-300">
-            No {activeTab === 'received' ? 'received' : 'sent'} requests yet
-          </p>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto">
-            {activeTab === 'received'
-              ? 'When someone sends you a swap request, it will appear here.'
-              : 'Go to Discover Matches and send a swap request to a peer!'}
+        <div className="p-16 text-center text-slate-400 text-xs animate-pulse">
+          Loading swap proposals...
+        </div>
+      ) : currentList.length === 0 ? (
+        <div className="rounded-3xl bg-[#111827]/50 border border-white/[0.08] p-12 text-center space-y-3">
+          <Inbox className="w-10 h-10 text-slate-600 mx-auto" />
+          <h3 className="text-base font-bold text-white font-['Plus_Jakarta_Sans']">
+            {activeSubTab === 'received' ? 'No incoming proposals' : 'No sent proposals'}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            {activeSubTab === 'received'
+              ? 'When classmates request a skill exchange, their proposals will show up here.'
+              : 'Explore the Discover page and reach out to students to trade knowledge!'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {displayList.map((req) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {currentList.map((req) => (
             <RequestCard
               key={req.id}
               req={req}
-              type={activeTab}
+              type={activeSubTab}
               onAccept={handleAccept}
               onReject={handleReject}
               onCancel={handleCancel}

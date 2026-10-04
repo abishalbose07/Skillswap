@@ -1,96 +1,144 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 import {
-  Zap, CheckCircle2, XCircle, RefreshCw, ArrowRight,
-  Trophy, Clock, BookOpen, User
+  Zap,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  ArrowRight,
+  Trophy,
+  Clock,
+  BookOpen,
+  User,
+  Users,
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 
-const STATUS_STYLES = {
-  ACTIVE:    { bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/30',    label: 'Active'    },
-  COMPLETED: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30', label: 'Completed' },
-  CANCELLED: { bg: 'bg-slate-500/10',   text: 'text-slate-400',   border: 'border-slate-500/30',   label: 'Cancelled' },
+const SWAP_STATUS_CONFIG = {
+  ACTIVE: {
+    badge: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    icon: Zap,
+    label: 'Ongoing Collaboration',
+  },
+  COMPLETED: {
+    badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    icon: CheckCircle2,
+    label: 'Completed Exchange',
+  },
+  CANCELLED: {
+    badge: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+    icon: XCircle,
+    label: 'Terminated',
+  },
 };
 
-function StatusBadge({ status }) {
-  const s = STATUS_STYLES[status] || STATUS_STYLES.ACTIVE;
+function SwapStatusPill({ status }) {
+  const config = SWAP_STATUS_CONFIG[status] || SWAP_STATUS_CONFIG.ACTIVE;
+  const Icon = config.icon;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border ${s.bg} ${s.text} ${s.border}`}>
-      {status === 'ACTIVE' && <Zap className="w-3 h-3" />}
-      {status === 'COMPLETED' && <CheckCircle2 className="w-3 h-3" />}
-      {status === 'CANCELLED' && <XCircle className="w-3 h-3" />}
-      {s.label}
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${config.badge}`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {config.label}
     </span>
   );
 }
 
 function SwapCard({ swap, currentUserEmail, onComplete, onCancel, actionLoading }) {
   const isLoading = actionLoading === swap.id;
-  // Determine which user is "the other" for display
   const partner = swap.userOne?.email === currentUserEmail ? swap.userTwo : swap.userOne;
+  const partnerName = partner?.fullName || partner?.name || 'Peer';
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition-all">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-600 flex items-center justify-center text-white font-black text-base shrink-0">
-            {(partner?.fullName || partner?.name || 'U').charAt(0).toUpperCase()}
+    <div className="rounded-3xl bg-[#111827]/80 border border-white/[0.08] hover:border-cyan-500/30 p-6 space-y-5 transition-all duration-200 shadow-xl group">
+      {/* Header: Partner & Status */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-md shadow-cyan-500/20 shrink-0">
+            <div className="w-full h-full bg-[#0d1322] rounded-[14px] flex items-center justify-center text-white text-base font-bold font-['Plus_Jakarta_Sans']">
+              {partnerName.charAt(0).toUpperCase()}
+            </div>
           </div>
           <div>
-            <p className="font-bold text-slate-100 text-sm">{partner?.fullName || partner?.name}</p>
-            <p className="text-[11px] text-slate-400">{partner?.college || partner?.email}</p>
+            <h4 className="font-bold text-white text-base font-['Plus_Jakarta_Sans']">
+              {partnerName}
+            </h4>
+            <p className="text-xs text-slate-400">
+              {partner?.college || 'Fellow Student'}
+              {partner?.email ? ` • ${partner.email}` : ''}
+            </p>
           </div>
         </div>
-        <StatusBadge status={swap.status} />
+
+        <SwapStatusPill status={swap.status} />
       </div>
 
-      {/* Skills Exchange Arrow */}
-      <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl p-3">
-        <div className="flex-1 text-center space-y-0.5">
-          <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Skill One</p>
-          <p className="text-xs font-semibold text-slate-200">{swap.skillOne?.name || '—'}</p>
-          <p className="text-[10px] text-slate-500">{swap.skillOne?.category}</p>
+      {/* Exchanged Skills Box */}
+      <div className="rounded-2xl bg-[#0b0f19] border border-white/[0.06] p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex-1 text-center sm:text-left">
+          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block mb-1">
+            Skill 1
+          </span>
+          <p className="text-sm font-bold text-white">{swap.skillOne?.name || '—'}</p>
+          <p className="text-xs text-slate-400">{swap.skillOne?.category || 'General'}</p>
         </div>
-        <ArrowRight className="w-4 h-4 text-slate-500 shrink-0" />
-        <div className="flex-1 text-center space-y-0.5">
-          <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Skill Two</p>
-          <p className="text-xs font-semibold text-slate-200">{swap.skillTwo?.name || '—'}</p>
-          <p className="text-[10px] text-slate-500">{swap.skillTwo?.category}</p>
+
+        <div className="w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
+          <Zap className="w-4 h-4" />
+        </div>
+
+        <div className="flex-1 text-center sm:text-right">
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">
+            Skill 2
+          </span>
+          <p className="text-sm font-bold text-white">{swap.skillTwo?.name || '—'}</p>
+          <p className="text-xs text-slate-400">{swap.skillTwo?.category || 'General'}</p>
         </div>
       </div>
 
       {/* Timestamps */}
-      <div className="flex items-center justify-between text-[10px] text-slate-500">
-        <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          Started: {swap.createdAt ? new Date(swap.createdAt).toLocaleDateString() : 'Unknown'}
+      <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+        <span className="flex items-center gap-1.5">
+          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          Started: {swap.createdAt ? new Date(swap.createdAt).toLocaleDateString() : 'Active'}
         </span>
         {swap.completedAt && (
-          <span className="flex items-center gap-1 text-emerald-400">
-            <CheckCircle2 className="w-3 h-3" />
-            Completed: {new Date(swap.completedAt).toLocaleDateString()}
+          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Finished: {new Date(swap.completedAt).toLocaleDateString()}
           </span>
         )}
       </div>
 
-      {/* Actions – only for ACTIVE swaps */}
+      {/* Actions */}
       {swap.status === 'ACTIVE' && (
-        <div className="flex gap-2 pt-1">
+        <div className="flex items-center gap-3 pt-3 border-t border-white/[0.04]">
           <button
             onClick={() => onComplete(swap.id)}
             disabled={isLoading}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
           >
-            {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trophy className="w-3.5 h-3.5" />}
-            Mark Complete
+            {isLoading ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trophy className="w-3.5 h-3.5" />
+            )}
+            Mark Completed
           </button>
+
           <button
             onClick={() => onCancel(swap.id)}
             disabled={isLoading}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+            className="py-2.5 px-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-semibold border border-white/[0.08] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
-            {isLoading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
-            Cancel Swap
+            {isLoading ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <XCircle className="w-3.5 h-3.5" />
+            )}
+            End Swap
           </button>
         </div>
       )}
@@ -99,13 +147,13 @@ function SwapCard({ swap, currentUserEmail, onComplete, onCancel, actionLoading 
 }
 
 export default function ActiveSwapsPage() {
-  const [swaps, setSwaps]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [swaps, setSwaps] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [currentUserEmail, setCurrentUserEmail] = useState(null);
-  const [filter, setFilter]       = useState('ACTIVE');
+  const [filter, setFilter] = useState('ALL');
 
   const fetchSwaps = useCallback(async () => {
     setLoading(true);
@@ -115,11 +163,11 @@ export default function ActiveSwapsPage() {
         api.get('/swaps'),
         api.get('/users/me'),
       ]);
-      setSwaps(swapRes.data);
+      setSwaps(swapRes.data || []);
       setCurrentUserEmail(meRes.data.email);
     } catch (err) {
       console.error('Failed to load swaps:', err);
-      setError('Failed to load active swaps. Please try again.');
+      setError('Unable to load active exchanges.');
     } finally {
       setLoading(false);
     }
@@ -129,16 +177,12 @@ export default function ActiveSwapsPage() {
     fetchSwaps();
   }, [fetchSwaps]);
 
-  const showSuccess = (msg) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
-  };
-
-  const handleComplete = async (id) => {
-    setActionLoading(id);
+  const handleComplete = async (swapId) => {
+    setActionLoading(swapId);
+    setSuccessMsg(null);
     try {
-      await api.put(`/swaps/${id}/complete`);
-      showSuccess('🎉 Swap marked as completed! Great work!');
+      await api.put(`/swaps/${swapId}/complete`);
+      setSuccessMsg('🎉 Awesome! Swap marked as completed. Kudos on expanding your skillset!');
       await fetchSwaps();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to complete swap.');
@@ -147,11 +191,13 @@ export default function ActiveSwapsPage() {
     }
   };
 
-  const handleCancel = async (id) => {
-    setActionLoading(id);
+  const handleCancel = async (swapId) => {
+    if (!window.confirm('Are you sure you want to end this skill swap collaboration?')) return;
+    setActionLoading(swapId);
+    setSuccessMsg(null);
     try {
-      await api.put(`/swaps/${id}/cancel`);
-      showSuccess('Swap cancelled.');
+      await api.put(`/swaps/${swapId}/cancel`);
+      setSuccessMsg('Swap collaboration has been ended.');
       await fetchSwaps();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to cancel swap.');
@@ -160,92 +206,111 @@ export default function ActiveSwapsPage() {
     }
   };
 
-  const filtered = swaps.filter(s => filter === 'ALL' || s.status === filter);
+  const filteredSwaps = swaps.filter((s) => {
+    if (filter === 'ALL') return true;
+    return s.status === filter;
+  });
 
-  const activeCount    = swaps.filter(s => s.status === 'ACTIVE').length;
-  const completedCount = swaps.filter(s => s.status === 'COMPLETED').length;
+  const activeCount = swaps.filter((s) => s.status === 'ACTIVE').length;
+  const completedCount = swaps.filter((s) => s.status === 'COMPLETED').length;
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-52 h-52 bg-emerald-500/10 blur-[70px] rounded-full pointer-events-none" />
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
-            <Zap className="w-3.5 h-3.5" /> Active Skill Swaps
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">My Skill Swaps</h1>
-          <p className="text-xs text-slate-400">
-            Track ongoing and past skill exchange sessions.
-          </p>
+    <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-8">
+      {/* Top Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-r from-[#131b2e] via-[#111827] to-[#0f172a] border border-white/[0.1] p-6 sm:p-8 overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 blur-[80px] pointer-events-none" />
 
-          {/* Stats */}
-          <div className="flex items-center gap-4 pt-2">
-            <div className="flex items-center gap-1.5 text-xs text-cyan-400 font-semibold">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
               <Zap className="w-3.5 h-3.5" />
-              {activeCount} Active
+              Active Skill Exchanges
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
-              <Trophy className="w-3.5 h-3.5" />
-              {completedCount} Completed
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-['Plus_Jakarta_Sans']">
+              Ongoing Collaborations
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-lg">
+              Track mutual learning sessions with your study partners. Mark swaps completed once both sides have learned their desired skills.
+            </p>
           </div>
+
+          <button
+            onClick={fetchSwaps}
+            disabled={loading}
+            className="self-start md:self-center flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-semibold text-slate-200 transition-all cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh Swaps
+          </button>
         </div>
       </div>
 
-      {/* Success / Error */}
-      {successMsg && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
-          <CheckCircle2 className="w-4 h-4 shrink-0" /> {successMsg}
-        </div>
-      )}
-      {error && (
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-medium">
-          <XCircle className="w-4 h-4 shrink-0" /> {error}
-          <button onClick={() => setError(null)} className="ml-auto cursor-pointer">✕</button>
-        </div>
-      )}
-
-      {/* Filter Controls */}
-      <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 rounded-2xl p-1.5">
-        {['ACTIVE', 'COMPLETED', 'CANCELLED', 'ALL'].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              filter === f
-                ? 'bg-slate-800 text-cyan-400 border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            {f.charAt(0) + f.slice(1).toLowerCase()}
-          </button>
-        ))}
+      {/* Filter Switcher */}
+      <div className="flex items-center gap-2.5 flex-wrap">
         <button
-          onClick={fetchSwaps}
-          disabled={loading}
-          className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all cursor-pointer disabled:opacity-50"
+          onClick={() => setFilter('ALL')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            filter === 'ALL'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'bg-white/[0.05] text-slate-400 hover:text-white'
+          }`}
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          All Exchanges ({swaps.length})
+        </button>
+
+        <button
+          onClick={() => setFilter('ACTIVE')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            filter === 'ACTIVE'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'bg-white/[0.05] text-slate-400 hover:text-white'
+          }`}
+        >
+          Active Now ({activeCount})
+        </button>
+
+        <button
+          onClick={() => setFilter('COMPLETED')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            filter === 'COMPLETED'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'bg-white/[0.05] text-slate-400 hover:text-white'
+          }`}
+        >
+          Completed ({completedCount})
         </button>
       </div>
 
-      {/* Content */}
+      {successMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-medium animate-in fade-in duration-150">
+          {successMsg}
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Swaps Grid */}
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-xs animate-pulse">Loading swaps...</div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center space-y-3">
-          <Zap className="w-10 h-10 text-slate-600 mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">No {filter.toLowerCase()} swaps yet</p>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto">
-            {filter === 'ACTIVE'
-              ? 'Accept a swap request to start an active skill exchange!'
-              : `No ${filter.toLowerCase()} swaps to show.`}
+        <div className="p-16 text-center text-slate-400 text-xs animate-pulse">
+          Loading learning collaborations...
+        </div>
+      ) : filteredSwaps.length === 0 ? (
+        <div className="rounded-3xl bg-[#111827]/50 border border-white/[0.08] p-12 text-center space-y-3">
+          <Users className="w-10 h-10 text-slate-600 mx-auto" />
+          <h3 className="text-base font-bold text-white font-['Plus_Jakarta_Sans']">
+            No collaborations in this view
+          </h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            When a swap request is accepted, it turns into an active collaboration right here.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map(swap => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {filteredSwaps.map((swap) => (
             <SwapCard
               key={swap.id}
               swap={swap}

@@ -36,19 +36,24 @@ export default function EditProfileModal({ user, onClose, onUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070b13]/85 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="bg-[#111827] border border-white/[0.1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
               <User className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-100">Edit Profile</h3>
+            <div>
+              <h3 className="text-base font-bold text-white font-['Plus_Jakarta_Sans']">
+                Edit Profile
+              </h3>
+              <p className="text-xs text-slate-400">Keep your student profile up-to-date</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -57,15 +62,15 @@ export default function EditProfileModal({ user, onClose, onUpdated }) {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="px-6 space-y-4">
           {error && (
-            <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/30 flex items-center gap-2 text-xs text-red-300">
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-2 text-xs text-rose-300">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-cyan-400" /> Full Name
+            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-indigo-400" /> Full Name
             </label>
             <input
               type="text"
@@ -74,13 +79,13 @@ export default function EditProfileModal({ user, onClose, onUpdated }) {
               onChange={handleChange}
               placeholder="Alex Rivers"
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/80 transition-all"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5 text-indigo-400" /> College / University
               </label>
               <input
@@ -89,12 +94,12 @@ export default function EditProfileModal({ user, onClose, onUpdated }) {
                 value={formData.college}
                 onChange={handleChange}
                 placeholder="Stanford University"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/80 transition-all"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5 text-indigo-400" /> Course / Major
               </label>
               <input
@@ -103,76 +108,71 @@ export default function EditProfileModal({ user, onClose, onUpdated }) {
                 value={formData.course}
                 onChange={handleChange}
                 placeholder="Computer Science"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/80 transition-all"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-cyan-400" /> Year of Study
+              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-indigo-400" /> Year of Study
               </label>
-              <select
+              <input
+                type="text"
                 name="yearOfStudy"
                 value={formData.yearOfStudy}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/80 transition-all"
-              >
-                <option value="">Select Year...</option>
-                <option value="1st Year (Freshman)">1st Year (Freshman)</option>
-                <option value="2nd Year (Sophomore)">2nd Year (Sophomore)</option>
-                <option value="3rd Year (Junior)">3rd Year (Junior)</option>
-                <option value="4th Year (Senior)">4th Year (Senior)</option>
-                <option value="Postgraduate / Master's">Postgraduate / Master's</option>
-                <option value="Alumni / Professional">Alumni / Professional</option>
-              </select>
+                placeholder="Sophomore / Year 2"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
+              />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-cyan-400" /> Profile Image URL
+              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-indigo-400" /> Avatar Image URL
               </label>
               <input
                 type="url"
                 name="profileImage"
                 value={formData.profileImage}
                 onChange={handleChange}
-                placeholder="https://example.com/avatar.jpg"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/80 transition-all"
+                placeholder="https://..."
+                className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-              <BookOpen className="w-3.5 h-3.5 text-cyan-400" /> Bio & Summary
-            </label>
+            <label className="text-xs font-semibold text-slate-300">About / Bio</label>
             <textarea
               name="bio"
               value={formData.bio}
               onChange={handleChange}
-              rows="3"
-              placeholder="Tell others about your passion, projects, and learning goals..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/80 transition-all resize-none"
+              rows={3}
+              placeholder="Tell other students about yourself, your learning goals, and how you like to collaborate..."
+              className="w-full px-4 py-2.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-all resize-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 pb-6 border-t border-slate-800">
+          <div className="flex items-center gap-3 pb-6 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all cursor-pointer"
+              className="flex-1 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-xs font-semibold border border-white/[0.08] transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
-              <Save className="w-3.5 h-3.5" />
-              {loading ? 'Saving...' : 'Save Profile'}
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-slate-950/20 border-t-slate-950 rounded-full animate-spin" />
+              ) : (
+                'Save Profile'
+              )}
             </button>
           </div>
         </form>

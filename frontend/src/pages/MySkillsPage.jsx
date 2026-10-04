@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import AddSkillModal from '../components/AddSkillModal';
-import { Sparkles, BookOpen, Plus, Trash2, Edit3, ShieldAlert, Award, RefreshCw, Check } from 'lucide-react';
+import {
+  Sparkles,
+  BookOpen,
+  Plus,
+  Trash2,
+  Edit3,
+  Award,
+  RefreshCw,
+  Check,
+  Zap,
+  Code2
+} from 'lucide-react';
 
 export default function MySkillsPage() {
   const [userSkills, setUserSkills] = useState([]);
@@ -17,7 +28,7 @@ export default function MySkillsPage() {
     setError(null);
     try {
       const response = await api.get('/users/me/skills');
-      setUserSkills(response.data);
+      setUserSkills(response.data || []);
     } catch (err) {
       console.error('Failed to fetch user skills:', err);
       setError('Failed to load your skills. Please ensure backend is running.');
@@ -47,7 +58,7 @@ export default function MySkillsPage() {
   };
 
   const handleDeleteSkill = async (skillId) => {
-    if (!window.confirm('Are you sure you want to remove this skill from your profile?')) return;
+    if (!window.confirm('Remove this skill from your profile?')) return;
     try {
       await api.delete(`/users/me/skills/${skillId}`);
       setUserSkills(userSkills.filter((sk) => sk.id !== skillId));
@@ -60,229 +71,257 @@ export default function MySkillsPage() {
   const teachingSkills = userSkills.filter((sk) => sk.type === 'TEACH');
   const learningSkills = userSkills.filter((sk) => sk.type === 'LEARN');
 
-  const getLevelBadgeClass = (level) => {
-    switch (level) {
-      case 'EXPERT':
-        return 'bg-purple-500/10 text-purple-300 border-purple-500/30';
-      case 'ADVANCED':
-        return 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30';
-      case 'INTERMEDIATE':
-        return 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30';
-      default:
-        return 'bg-slate-800 text-slate-300 border-slate-700';
-    }
-  };
-
   return (
-    <div className="w-full max-w-5xl mx-auto p-6 space-y-8">
+    <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-8">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-semibold border border-cyan-500/20">
-            <Award className="w-3.5 h-3.5" /> Skill Portfolio
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">My Skills Portfolio</h1>
-          <p className="text-xs text-slate-400">
-            Manage skills you can teach to others and skills you want to learn.
-          </p>
-        </div>
+      <div className="relative rounded-3xl bg-gradient-to-r from-[#131b2e] via-[#111827] to-[#0f172a] border border-white/[0.1] p-6 sm:p-8 overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 blur-[80px] pointer-events-none" />
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setModalType('TEACH');
-              setShowAddModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> Add Teaching Skill
-          </button>
-          <button
-            onClick={() => {
-              setModalType('LEARN');
-              setShowAddModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> Add Learning Skill
-          </button>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold">
+              <Award className="w-3.5 h-3.5" />
+              Skill Portfolio
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-['Plus_Jakarta_Sans']">
+              Skills Portfolio
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
+              Add skills you have mastered to teach fellow students, and register topics you are excited to learn this term.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setModalType('TEACH');
+                setShowAddModal(true);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Teach Skill
+            </button>
+            <button
+              onClick={() => {
+                setModalType('LEARN');
+                setShowAddModal(true);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Learn Skill
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Grid: 2 Columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Teaching Skills Section */}
+        {/* Teaching Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h2 className="text-lg font-extrabold text-slate-100 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-cyan-400" /> Teaching Skills ({teachingSkills.length})
-            </h2>
-            <span className="text-xs text-cyan-400 font-mono">TEACH</span>
+          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-cyan-400" />
+              <h2 className="font-bold text-white text-base font-['Plus_Jakarta_Sans']">
+                Skills I Can Teach ({teachingSkills.length})
+              </h2>
+            </div>
+            <button
+              onClick={() => {
+                setModalType('TEACH');
+                setShowAddModal(true);
+              }}
+              className="text-xs font-semibold text-cyan-400 hover:underline cursor-pointer"
+            >
+              + Add
+            </button>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-slate-400 text-xs animate-pulse">Loading skills...</div>
+            <p className="text-xs text-slate-400 animate-pulse">Loading skills...</p>
           ) : teachingSkills.length === 0 ? (
-            <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-8 text-center space-y-3">
-              <Sparkles className="w-8 h-8 text-cyan-400/40 mx-auto" />
-              <p className="text-sm font-medium text-slate-300">No Teaching Skills Added Yet</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                Share what you are great at! Add skills you can mentor or exchange with peers.
+            <div className="rounded-3xl bg-[#111827]/50 border border-dashed border-white/[0.1] p-8 text-center space-y-3">
+              <p className="text-sm font-semibold text-slate-300">No teaching skills listed</p>
+              <p className="text-xs text-slate-400">
+                Share what you know to unlock matching recommendations!
               </p>
               <button
                 onClick={() => {
                   setModalType('TEACH');
                   setShowAddModal(true);
                 }}
-                className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold border border-cyan-500/30 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-xs font-bold hover:bg-cyan-500/25 transition-all cursor-pointer"
               >
-                + Add First Teaching Skill
+                + Add Teaching Skill
               </button>
             </div>
           ) : (
             <div className="space-y-3">
-              {teachingSkills.map((userSkill) => (
-                <div
-                  key={userSkill.id}
-                  className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg hover:border-slate-700 transition-all"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-slate-100 text-sm">{userSkill.skill.name}</h3>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-400 border border-slate-800">
-                        {userSkill.skill.category}
-                      </span>
-                    </div>
-
-                    {editingSkillId === userSkill.id ? (
-                      <div className="flex items-center gap-1.5 pt-1">
-                        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map((lvl) => (
-                          <button
-                            key={lvl}
-                            onClick={() => handleUpdateProficiency(userSkill.id, lvl)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border cursor-pointer ${
-                              userSkill.proficiencyLevel === lvl
-                                ? 'bg-cyan-500 text-slate-950 border-cyan-400'
-                                : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        ))}
+              {teachingSkills.map((sk) => {
+                const isEditing = editingSkillId === sk.id;
+                return (
+                  <div
+                    key={sk.id}
+                    className="rounded-2xl bg-[#111827]/80 border border-white/[0.08] hover:border-cyan-500/30 p-4 transition-all space-y-2 group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">
+                          {sk.skill?.name || 'Skill'}
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          {sk.skill?.category || 'General'}
+                        </p>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getLevelBadgeClass(userSkill.proficiencyLevel)}`}>
-                          {userSkill.proficiencyLevel}
-                        </span>
+
+                      <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => setEditingSkillId(userSkill.id)}
-                          className="text-slate-500 hover:text-cyan-400 p-0.5 transition-all cursor-pointer"
-                          title="Change proficiency level"
+                          onClick={() => setEditingSkillId(isEditing ? null : sk.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+                          title="Change Level"
                         >
-                          <Edit3 className="w-3 h-3" />
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSkill(sk.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                          title="Remove Skill"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
+                    </div>
+
+                    {isEditing ? (
+                      <div className="pt-2 flex items-center gap-2">
+                        <select
+                          defaultValue={sk.proficiencyLevel}
+                          onChange={(e) => handleUpdateProficiency(sk.id, e.target.value)}
+                          disabled={updatingLevel}
+                          className="px-3 py-1.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white focus:outline-none focus:border-cyan-500 transition-all cursor-pointer"
+                        >
+                          <option value="BEGINNER">BEGINNER</option>
+                          <option value="INTERMEDIATE">INTERMEDIATE</option>
+                          <option value="ADVANCED">ADVANCED</option>
+                          <option value="EXPERT">EXPERT</option>
+                        </select>
+                        <span className="text-[11px] text-slate-400">Select new level</span>
+                      </div>
+                    ) : (
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-[10px] font-bold tracking-wider uppercase">
+                        {sk.proficiencyLevel}
+                      </span>
                     )}
                   </div>
-
-                  <button
-                    onClick={() => handleDeleteSkill(userSkill.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                    title="Remove skill"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Learning Skills Section */}
+        {/* Learning Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h2 className="text-lg font-extrabold text-slate-100 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-indigo-400" /> Learning Skills ({learningSkills.length})
-            </h2>
-            <span className="text-xs text-indigo-400 font-mono">LEARN</span>
+          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-indigo-400" />
+              <h2 className="font-bold text-white text-base font-['Plus_Jakarta_Sans']">
+                Skills I Want to Learn ({learningSkills.length})
+              </h2>
+            </div>
+            <button
+              onClick={() => {
+                setModalType('LEARN');
+                setShowAddModal(true);
+              }}
+              className="text-xs font-semibold text-indigo-400 hover:underline cursor-pointer"
+            >
+              + Add
+            </button>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-slate-400 text-xs animate-pulse">Loading skills...</div>
+            <p className="text-xs text-slate-400 animate-pulse">Loading skills...</p>
           ) : learningSkills.length === 0 ? (
-            <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-8 text-center space-y-3">
-              <BookOpen className="w-8 h-8 text-indigo-400/40 mx-auto" />
-              <p className="text-sm font-medium text-slate-300">No Learning Skills Added Yet</p>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                What do you want to learn next? Add skills to find mentors and swap knowledge.
+            <div className="rounded-3xl bg-[#111827]/50 border border-dashed border-white/[0.1] p-8 text-center space-y-3">
+              <p className="text-sm font-semibold text-slate-300">No learning goals registered</p>
+              <p className="text-xs text-slate-400">
+                Register skills you want to learn to get reciprocal swap matches!
               </p>
               <button
                 onClick={() => {
                   setModalType('LEARN');
                   setShowAddModal(true);
                 }}
-                className="px-3.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs font-bold border border-indigo-500/30 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold hover:bg-indigo-600/30 transition-all cursor-pointer"
               >
-                + Add First Learning Skill
+                + Add Learning Goal
               </button>
             </div>
           ) : (
             <div className="space-y-3">
-              {learningSkills.map((userSkill) => (
-                <div
-                  key={userSkill.id}
-                  className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg hover:border-slate-700 transition-all"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-slate-100 text-sm">{userSkill.skill.name}</h3>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-950 text-slate-400 border border-slate-800">
-                        {userSkill.skill.category}
-                      </span>
-                    </div>
-
-                    {editingSkillId === userSkill.id ? (
-                      <div className="flex items-center gap-1.5 pt-1">
-                        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map((lvl) => (
-                          <button
-                            key={lvl}
-                            onClick={() => handleUpdateProficiency(userSkill.id, lvl)}
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold border cursor-pointer ${
-                              userSkill.proficiencyLevel === lvl
-                                ? 'bg-indigo-500 text-white border-indigo-400'
-                                : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        ))}
+              {learningSkills.map((sk) => {
+                const isEditing = editingSkillId === sk.id;
+                return (
+                  <div
+                    key={sk.id}
+                    className="rounded-2xl bg-[#111827]/80 border border-white/[0.08] hover:border-indigo-500/30 p-4 transition-all space-y-2 group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">
+                          {sk.skill?.name || 'Skill'}
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          {sk.skill?.category || 'General'}
+                        </p>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getLevelBadgeClass(userSkill.proficiencyLevel)}`}>
-                          {userSkill.proficiencyLevel}
-                        </span>
+
+                      <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => setEditingSkillId(userSkill.id)}
-                          className="text-slate-500 hover:text-indigo-400 p-0.5 transition-all cursor-pointer"
-                          title="Change proficiency level"
+                          onClick={() => setEditingSkillId(isEditing ? null : sk.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+                          title="Change Target"
                         >
-                          <Edit3 className="w-3 h-3" />
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSkill(sk.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                          title="Remove Goal"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
+                    </div>
+
+                    {isEditing ? (
+                      <div className="pt-2 flex items-center gap-2">
+                        <select
+                          defaultValue={sk.proficiencyLevel}
+                          onChange={(e) => handleUpdateProficiency(sk.id, e.target.value)}
+                          disabled={updatingLevel}
+                          className="px-3 py-1.5 rounded-xl bg-[#0b0f19] border border-white/[0.1] text-xs text-white focus:outline-none focus:border-indigo-500 transition-all cursor-pointer"
+                        >
+                          <option value="BEGINNER">BEGINNER</option>
+                          <option value="INTERMEDIATE">INTERMEDIATE</option>
+                          <option value="ADVANCED">ADVANCED</option>
+                          <option value="EXPERT">EXPERT</option>
+                        </select>
+                        <span className="text-[11px] text-slate-400">Target level</span>
+                      </div>
+                    ) : (
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] font-bold tracking-wider uppercase">
+                        {sk.proficiencyLevel}
+                      </span>
                     )}
                   </div>
-
-                  <button
-                    onClick={() => handleDeleteSkill(userSkill.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                    title="Remove skill"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -292,8 +331,9 @@ export default function MySkillsPage() {
         <AddSkillModal
           initialType={modalType}
           onClose={() => setShowAddModal(false)}
-          onAdded={(newSkill) => {
-            setUserSkills([...userSkills, newSkill]);
+          onAdded={() => {
+            fetchMySkills();
+            setShowAddModal(false);
           }}
         />
       )}
